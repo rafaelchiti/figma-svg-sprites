@@ -1,17 +1,48 @@
-<h2>Rectangle Creator</h2>
-<p>Count: <input id="count" type="number" value="5"></p>
-<button id="create">Create</button>
+<h2>SVG Sprite Creator</h2>
+<p>Select frames in Figma and click "Create SVG Sprite" to generate a sprite with symbols.</p>
+<button id="create">Create SVG Sprite</button>
 <button id="cancel">Cancel</button>
+
+<div id="result" style="display: none; margin-top: 10px">
+  <h3>Generated SVG Sprite:</h3>
+  <textarea
+    id="svgOutput"
+    style="width: 100%; height: 100px; font-family: monospace; margin-top: 5px"
+  ></textarea>
+  <button id="copy" style="margin-top: 5px">Copy to Clipboard</button>
+</div>
+
 <script>
+  document.getElementById("create").onclick = () => {
+    parent.postMessage({ pluginMessage: { type: "create-sprite" } }, "*");
+  };
 
-document.getElementById('create').onclick = () => {
-  const textbox = document.getElementById('count');
-  const count = parseInt(textbox.value, 10);
-  parent.postMessage({ pluginMessage: { type: 'create-shapes', count } }, '*')
-}
+  document.getElementById("cancel").onclick = () => {
+    parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
+  };
 
-document.getElementById('cancel').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
-}
+  document.getElementById("copy").onclick = () => {
+    const textarea = document.getElementById("svgOutput");
+    textarea.select();
+    document.execCommand("copy");
+    // Show a message that copying was successful
+    const button = document.getElementById("copy");
+    const originalText = button.textContent;
+    button.textContent = "Copied!";
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  };
 
+  // Listen for messages from the plugin code
+  window.onmessage = (event) => {
+    const message = event.data.pluginMessage;
+    if (message.type === "sprite-created") {
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "block";
+
+      const textarea = document.getElementById("svgOutput");
+      textarea.value = message.sprite;
+    }
+  };
 </script>
